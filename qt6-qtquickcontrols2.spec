@@ -4,9 +4,12 @@
 
 %define _qtdir %{_libdir}/qt%{major}
 
+%define libname %mklibname Qt6QuickControls2 %{major}
+%define devname %mklibname -d Qt6QuickControls2
+
 Name:		qt6-qtquickcontrols2
 Version:	6.1.0
-Release:	%{?beta:0.%{beta}.}%{?snapshot:0.%{snapshot}.}1
+Release:	%{?beta:0.%{beta}.}%{?snapshot:0.%{snapshot}.}2
 %if 0%{?snapshot:1}
 # "git archive"-d from "dev" branch of git://code.qt.io/qt/qtbase.git
 Source:		qtquickcontrols2-%{?snapshot:%{snapshot}}%{!?snapshot:%{version}}.tar.zst
@@ -48,6 +51,21 @@ License:	LGPLv3/GPLv3/GPLv2
 %description
 Qt %{major} Quick controls
 
+%package -n %{libname}
+Summary:	Qt %{major} Quick controls
+Group:		System/Libraries
+%rename %{name}
+
+%description -n %{libname}
+Qt %{major} Quick controls
+
+%package -n %{devname}
+Summary:	Qt %{major} Quick controls development files
+Group:		Development/Qt and KDE
+
+%description -n %{devname}
+Qt %{major} Quick controls development files
+
 %prep
 %autosetup -p1 -n qtquickcontrols2%{!?snapshot:-everywhere-src-%{version}%{?beta:-%{beta}}}
 # FIXME why are OpenGL lib paths autodetected incorrectly, preferring
@@ -68,51 +86,47 @@ rm -f %{buildroot}%{_libdir}/qt6/%{_lib}/libpnp_basictools.a
 # Put stuff where tools will find it
 # We can't do the same for %{_includedir} right now because that would
 # clash with qt5 (both would want to have /usr/include/QtCore and friends)
-mkdir -p %{buildroot}%{_bindir} %{buildroot}%{_libdir}/cmake
+mkdir -p %{buildroot}%{_bindir}
 for i in %{buildroot}%{_qtdir}/lib/*.so*; do
 	ln -s qt%{major}/lib/$(basename ${i}) %{buildroot}%{_libdir}/
 done
-for i in %{buildroot}%{_qtdir}/lib/cmake/*; do
-	[ "$(basename ${i})" = "Qt6BuildInternals" -o "$(basename ${i})" = "Qt6Qml" ] && continue
-	ln -s ../qt%{major}/lib/cmake/$(basename ${i}) %{buildroot}%{_libdir}/cmake/
-done
+mv %{buildroot}%{_qtdir}/lib/cmake %{buildroot}%{_libdir}/
 
-%files
-%{_libdir}/cmake/Qt6QuickControls2
-%{_libdir}/cmake/Qt6QuickControls2Impl
-%{_libdir}/cmake/Qt6QuickTemplates2
-%{_libdir}/libQt6QuickControls2.so
+%files -n %{libname}
 %{_libdir}/libQt6QuickControls2.so.*
-%{_libdir}/libQt6QuickControls2Impl.so
 %{_libdir}/libQt6QuickControls2Impl.so.*
-%{_libdir}/libQt6QuickTemplates2.so
 %{_libdir}/libQt6QuickTemplates2.so.*
-%{_qtdir}/examples/quickcontrols2
-%{_qtdir}/include/QtQuickControls2
-%{_qtdir}/include/QtQuickControls2Impl
-%{_qtdir}/include/QtQuickTemplates2
-%{_qtdir}/lib/cmake/Qt6BuildInternals/StandaloneTests/QtQuickControls2TestsConfig.cmake
-%{_qtdir}/lib/cmake/Qt6Qml/QmlPlugins
-%{_qtdir}/lib/cmake/Qt6QuickControls2/
-%{_qtdir}/lib/cmake/Qt6QuickControls2Impl
-%{_qtdir}/lib/cmake/Qt6QuickTemplates2
-%{_qtdir}/lib/libQt6QuickControls2.prl
-%{_qtdir}/lib/libQt6QuickControls2.so
 %{_qtdir}/lib/libQt6QuickControls2.so.*
-%{_qtdir}/lib/libQt6QuickControls2Impl.prl
-%{_qtdir}/lib/libQt6QuickControls2Impl.so
 %{_qtdir}/lib/libQt6QuickControls2Impl.so.*
-%{_qtdir}/lib/libQt6QuickTemplates2.prl
-%{_qtdir}/lib/libQt6QuickTemplates2.so
 %{_qtdir}/lib/libQt6QuickTemplates2.so.*
-%{_qtdir}/lib/metatypes/*.json
-%{_qtdir}/mkspecs/modules/*.pri
-%{_qtdir}/modules/QuickControls2.json
-%{_qtdir}/modules/QuickControls2Impl.json
-%{_qtdir}/modules/QuickTemplates2.json
 %{_qtdir}/qml/Qt/labs/platform/libqtlabsplatformplugin.so
 %{_qtdir}/qml/Qt/labs/platform/plugins.qmltypes
 %{_qtdir}/qml/Qt/labs/platform/qmldir
 %{_qtdir}/qml/QtQuick/Controls
 %{_qtdir}/qml/QtQuick/NativeStyle
 %{_qtdir}/qml/QtQuick/Templates
+
+%files -n %{devname}
+%{_libdir}/cmake/Qt6BuildInternals/StandaloneTests/QtQuickControls2TestsConfig.cmake
+%{_libdir}/cmake/Qt6Qml/QmlPlugins/*
+%{_libdir}/cmake/Qt6QuickControls2
+%{_libdir}/cmake/Qt6QuickControls2Impl
+%{_libdir}/cmake/Qt6QuickTemplates2
+%{_libdir}/libQt6QuickControls2.so
+%{_libdir}/libQt6QuickControls2Impl.so
+%{_libdir}/libQt6QuickTemplates2.so
+%{_qtdir}/examples/quickcontrols2
+%{_qtdir}/include/QtQuickControls2
+%{_qtdir}/include/QtQuickControls2Impl
+%{_qtdir}/include/QtQuickTemplates2
+%{_qtdir}/lib/libQt6QuickControls2.prl
+%{_qtdir}/lib/libQt6QuickControls2.so
+%{_qtdir}/lib/libQt6QuickControls2Impl.prl
+%{_qtdir}/lib/libQt6QuickControls2Impl.so
+%{_qtdir}/lib/libQt6QuickTemplates2.prl
+%{_qtdir}/lib/libQt6QuickTemplates2.so
+%{_qtdir}/lib/metatypes/*.json
+%{_qtdir}/mkspecs/modules/*.pri
+%{_qtdir}/modules/QuickControls2.json
+%{_qtdir}/modules/QuickControls2Impl.json
+%{_qtdir}/modules/QuickTemplates2.json
